@@ -1,0 +1,312 @@
+/* Purpose: Create a Bluetooth controlled LED light source
+ * Programmer: Andrew Krenek
+ * Date: 4/23/2019
+ * 
+ */
+ 
+#include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h>
+#endif
+
+SoftwareSerial BT(10, 11);  // TX, RX of the Bluetooth Module 
+
+#define PIXEL_PIN      6     // Data Pin of Led strip 
+#define PIXEL_COUNT    30    // Number of LEDs in the strip
+#define BRIGHTNESS     255   // use 96 for medium brightness
+#define SPEED          50    // Speed of each Color Transition (in ms)
+#define IMMEDIATELY    0     // Transition happen instantly
+
+
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
+//- - LED Global Variables - -
+
+bool offOld = LOW;
+bool WhiteOld = LOW;
+bool RedOld = LOW;
+bool GreenOld = LOW;
+bool BlueOld = LOW;
+bool OrangeOld = LOW;
+bool PurpleOld = LOW;
+int  showType = 0;
+
+
+//- - LDR Variables - -
+
+int sensorPin = A0;
+int sensorValue = 0;
+
+void setup() {
+//- - Bluetooth setup for Arduino to recognize - -
+   Serial.begin(9600);
+   
+   BT.begin(9600);
+   
+   BT.println("Connected to Arduino");
+    
+
+  strip.setBrightness(BRIGHTNESS);  
+   
+
+  strip.begin();
+  strip.show();
+}
+
+
+char a;
+
+void loop() {
+//- - Variables for LED - -
+
+  bool off = LOW;
+  bool White = LOW;
+  bool Blue = LOW;
+  bool Red = LOW;
+  bool Green = LOW;
+  bool Orange = LOW;
+  bool Purple = LOW;
+  bool ende;
+
+//- - Light Dependant Resistor set up - -
+  sensorValue = analogRead(sensorPin);
+  Serial.println(sensorValue);
+  
+  delay(100); //Takes input of light every 100 milliseconds
+
+  if(sensorValue < 200){
+    off = LOW;
+  }
+// - - Checking for the character input from the phone - - 
+  
+   if (BT.available())
+   {
+    a= (char)BT.read();
+
+
+
+//- - Off Command - -
+    if(a=='O')
+    {
+      off = HIGH;
+          BT.println("TURNING OFF LEDs..");
+
+    }else{
+          off = LOW;
+    }
+    
+//* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+//- - White Command - -
+
+    if(a == 'w' && sensorValue < 200)
+    {
+      White = HIGH;
+          BT.println("TURNING LEDs WHITE");
+
+    }else{
+          White = LOW;
+    }
+    
+    
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+
+//- - Blue Command - -
+    if(a=='b' && sensorValue<200)
+    {
+      Blue = HIGH;
+          BT.println("CHANGING TO BLUE");      
+          
+    }else{
+          Blue = LOW;  
+    }
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+
+// - - Red Command - - 
+if(a=='r' && sensorValue<200)
+    {
+      Red = HIGH;
+          BT.println("CHANGING TO RED");            
+    }else{
+          Red = LOW;  
+    }
+
+//* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+//- - Green Command - -
+if(a=='g' && sensorValue<200)
+    {
+      Green = HIGH;
+          BT.println("CHANGING TO GREEN");      
+          
+    }else{
+          Green = LOW;
+    }
+
+//* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+//- - Orange Command - -
+if(a=='o' && sensorValue<200)
+    {
+      Orange = HIGH;
+          BT.println("CHANGING TO Orange");      
+          
+    }else{
+          Orange = LOW;
+    }
+
+//* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+//- - Purple Command - -
+if(a=='p' && sensorValue<200)
+    {
+      Purple = HIGH;
+          BT.println("CHANGING TO Purple");      
+          
+    }else{
+          Purple = LOW;
+    }
+
+}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
+//How to the lights turn off
+
+// Off Animation
+
+if (off == LOW && offOld == HIGH) {
+    delay(20);
+   
+    if (off == LOW) {
+       showType = 0  ;                           
+     
+      startShow(showType);
+    }
+  }
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// White Off Animation
+
+if (White == LOW && WhiteOld == HIGH) {
+    delay(20);
+   
+    if (White == LOW) {
+       showType = 1  ;                           
+     
+      startShow(showType);
+    }
+  }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+ 
+// Red Off Animation
+  
+  if (Red == LOW && RedOld == HIGH) {
+    delay(20);
+       
+    if (Red == LOW) {
+       showType = 2  ;                            
+     
+      startShow(showType);
+    }
+  }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// Green Off Animation
+
+if (Green == LOW && GreenOld == HIGH) {
+    delay(20);
+       
+    if (Green == LOW) {
+       showType = 3  ;                             
+     
+      startShow(showType);
+    }
+  }
+  
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// Blue Off Animation
+
+if (Blue == LOW && BlueOld == HIGH) {
+    delay(20);
+      
+    if (Blue == LOW) {
+       showType = 4  ;                            
+     
+      startShow(showType);
+    }
+  }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Orange Off Animation
+
+if (Orange == LOW && OrangeOld == HIGH) {
+    delay(20);
+       
+    if (Orange == LOW) {
+       showType = 5  ;                            
+     
+      startShow(showType);
+    }
+  }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Purple Off Animation
+if (Purple == LOW && PurpleOld == HIGH) {
+    delay(20);
+       
+    if (Purple == LOW) {
+       showType = 6  ;                            
+     
+      startShow(showType);
+    }
+  }
+   
+
+}
+
+//* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+//How fast the LED strip lights up and how bright it will be
+void startShow(int i) {
+  switch(i){
+
+   case 0: colorWipe(strip.Color(0, 0, 0), SPEED);    // Off
+          break;
+
+   case 1: strip.setBrightness(255);                            // Changes the Brightness to MAX
+          colorWipe(strip.Color(255, 255, 255), IMMEDIATELY);  // White
+          strip.setBrightness(BRIGHTNESS);                     // Reset the Brightness to Default value
+           break;  
+
+    case 2: colorWipe(strip.Color(255, 0, 0), SPEED);  // Red
+            break;
+
+    case 3: colorWipe(strip.Color(0, 255, 0), SPEED);  // Green
+           break;
+
+    case 4: colorWipe(strip.Color(0, 0, 255), SPEED);  // Blue
+            break;
+
+    case 5: colorWipe(strip.Color(255, 69, 0), SPEED);  // Orange
+            break;            
+
+    case 6: colorWipe(strip.Color(75, 0, 130), SPEED);  // Purple
+            break;            
+
+  }
+}
+
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
